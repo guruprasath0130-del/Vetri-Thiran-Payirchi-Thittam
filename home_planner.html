@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Home Interior Planner — PocketSmart AI{% endblock %}
+{% block content %}
+<section class="page-head">
+  <span class="eyebrow">HOME INTERIOR</span>
+  <h1>Build your home plan</h1>
+  <p class="muted">Add the room, style, budget and items you want to consider.</p>
+</section>
+
+<form class="planner-layout" id="homeForm">
+  <div class="panel form-panel">
+    <label>Total budget (₹)<input id="budget" type="number" min="1" step="100" required></label>
+    <div class="two-col">
+      <label>Room type
+        <select id="room_type"><option>Living Room</option><option>Bedroom</option><option>Kitchen</option><option>Dining Room</option><option>Study Room</option></select>
+      </label>
+      <label>Style
+        <select id="style"><option>Modern</option><option>Minimal</option><option>Traditional</option><option>Luxury</option><option>Industrial</option></select>
+      </label>
+    </div>
+    <label>City<input id="city" value="Chennai" maxlength="80"></label>
+    <div class="item-head"><h3>Items</h3><button type="button" class="btn small secondary" onclick="addHomeItem()">+ Add item</button></div>
+    <div id="homeItems"></div>
+    <button class="btn primary full" type="submit">Generate Home Recommendations</button>
+    <div id="homeMessage" class="message"></div>
+  </div>
+  <aside class="panel tips-panel">
+    <h3>What the AI considers</h3>
+    <ul><li>Your total budget</li><li>Room and preferred style</li><li>Requested quantities</li><li>Estimated marketplace options</li><li>Budget remaining and practical tips</li></ul>
+  </aside>
+</form>
+<section id="results" class="results hidden"></section>
+{% endblock %}
+{% block scripts %}
+<script>
+requireAuth();
+let itemCount = 0;
+function addHomeItem(category="Ceiling Light", quantity=1) {
+  const id = ++itemCount;
+  document.getElementById("homeItems").insertAdjacentHTML("beforeend", `
+    <div class="dynamic-row" id="item-${id}">
+      <select class="item-category">
+        <option ${category==="Ceiling Light"?"selected":""}>Ceiling Light</option>
+        <option ${category==="Ceiling Fan"?"selected":""}>Ceiling Fan</option>
+        <option ${category==="Sofa"?"selected":""}>Sofa</option>
+        <option ${category==="Dining Table"?"selected":""}>Dining Table</option>
+        <option ${category==="Chair"?"selected":""}>Chair</option>
+        <option ${category==="Storage"?"selected":""}>Storage</option>
+        <option ${category==="Wall Art"?"selected":""}>Wall Art</option>
+        <option ${category==="Curtain"?"selected":""}>Curtain</option>
+      </select>
+      <input class="item-qty" type="number" min="1" max="100" value="${quantity}">
+      <button type="button" class="icon-btn" onclick="document.getElementById('item-${id}').remove()">×</button>
+    </div>`);
+}
+addHomeItem(); addHomeItem("Sofa", 1);
+
+document.getElementById("homeForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const message = document.getElementById("homeMessage");
+  const items = [...document.querySelectorAll("#homeItems .dynamic-row")].map(row => ({
+    category: row.querySelector(".item-category").value,
+    quantity: Number(row.querySelector(".item-qty").value),
+    notes: ""
+  }));
+  if (!items.length) { message.textContent = "Add at least one item."; return; }
+  message.textContent = "Generating...";
+  try {
+    const data = await api("/api/generate-home", {
+      method: "POST", auth: true,
+      body: JSON.stringify({
+        budget: Number(document.getElementById("budget").value),
+        room_type: document.getElementById("room_type").value,
+        style: document.getElementById("style").value,
+        city: document.getElementById("city").value,
+        items
+      })
+    });
+    renderRecommendation(data, "results");
+    message.textContent = data.ai_enabled ? "Generated with Gemini AI." : "Generated with fallback mode. Add GEMINI_API_KEY for AI mode.";
+  } catch (err) { message.textContent = err.message; }
+});
+</script>
+{% endblock %}

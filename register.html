@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Register — PocketSmart AI{% endblock %}
+{% block content %}
+<section class="auth-wrap">
+  <form class="panel auth-card" id="registerForm">
+    <span class="eyebrow">CREATE ACCOUNT</span>
+    <h1>Register</h1>
+    <p class="muted">Create an account to save your recommendation history.</p>
+    <label>Full name<input type="text" id="full_name" required minlength="2" maxlength="120"></label>
+    <label>Email<input type="email" id="email" required autocomplete="email"></label>
+    <label>Password<input type="password" id="password" required minlength="8" autocomplete="new-password"></label>
+    <button class="btn primary full" type="submit">Create Account</button>
+    <div id="formMessage" class="message"></div>
+    <p class="center">Already registered? <a href="/login">Login</a></p>
+  </form>
+</section>
+{% endblock %}
+{% block scripts %}
+<script>
+document.getElementById("registerForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const msg = document.getElementById("formMessage");
+  msg.textContent = "Creating account...";
+  try {
+    const data = await api("/register", {
+      method: "POST",
+      body: JSON.stringify({
+        full_name: document.getElementById("full_name").value,
+        email: document.getElementById("email").value,
+        password: document.getElementById("password").value
+      })
+    });
+    saveToken(data.access_token);
+    location.href = "/dashboard";
+  } catch (err) { msg.textContent = err.message; }
+});
+</script>
+{% endblock %}

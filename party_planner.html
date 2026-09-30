@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Party Planner — PocketSmart AI{% endblock %}
+{% block content %}
+<section class="page-head">
+  <span class="eyebrow">PARTY PLANNER</span>
+  <h1>Plan your event budget</h1>
+  <p class="muted">Set your guest count and event preferences to create a balanced spending plan.</p>
+</section>
+
+<form class="planner-layout" id="partyForm">
+  <div class="panel form-panel">
+    <div class="two-col">
+      <label>Total budget (₹)<input id="budget" type="number" min="1" step="100" required></label>
+      <label>Guests<input id="guests" type="number" min="1" max="10000" required></label>
+    </div>
+    <div class="two-col">
+      <label>Event type
+        <select id="event_type"><option>Birthday</option><option>Wedding</option><option>Corporate</option><option>Anniversary</option><option>Family Gathering</option></select>
+      </label>
+      <label>Duration (hours)<input id="duration_hours" type="number" min="1" max="24" value="4"></label>
+    </div>
+    <label>City<input id="city" value="Chennai"></label>
+    <div class="two-col">
+      <label>Venue preference<select id="venue_preference"><option>Budget-friendly</option><option>Premium</option><option>Outdoor</option><option>Hotel</option><option>Community Hall</option></select></label>
+      <label>Food preference<select id="food_preference"><option>Mixed</option><option>Vegetarian</option><option>Non-vegetarian</option><option>Snacks & drinks</option></select></label>
+    </div>
+    <button class="btn primary full" type="submit">Generate Party Recommendations</button>
+    <div id="partyMessage" class="message"></div>
+  </div>
+  <aside class="panel tips-panel">
+    <h3>Suggested allocation</h3>
+    <p>The fallback engine starts with approximate shares for catering, venue, decoration, entertainment and contingency. Gemini can adapt the allocation to your inputs.</p>
+  </aside>
+</form>
+<section id="results" class="results hidden"></section>
+{% endblock %}
+{% block scripts %}
+<script>
+requireAuth();
+document.getElementById("partyForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const msg = document.getElementById("partyMessage");
+  msg.textContent = "Generating...";
+  try {
+    const data = await api("/api/generate-party", {
+      method: "POST", auth: true,
+      body: JSON.stringify({
+        budget: Number(document.getElementById("budget").value),
+        event_type: document.getElementById("event_type").value,
+        guests: Number(document.getElementById("guests").value),
+        city: document.getElementById("city").value,
+        venue_preference: document.getElementById("venue_preference").value,
+        food_preference: document.getElementById("food_preference").value,
+        duration_hours: Number(document.getElementById("duration_hours").value)
+      })
+    });
+    renderRecommendation(data, "results");
+    msg.textContent = data.ai_enabled ? "Generated with Gemini AI." : "Generated with fallback mode.";
+  } catch (err) { msg.textContent = err.message; }
+});
+</script>
+{% endblock %}

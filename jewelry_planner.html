@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Jewelry Planner — PocketSmart AI{% endblock %}
+{% block content %}
+<section class="page-head">
+  <span class="eyebrow">JEWELRY PLANNER</span>
+  <h1>Match jewelry to the occasion</h1>
+  <p class="muted">Describe your style and optionally upload an outfit image for multimodal AI analysis.</p>
+</section>
+
+<form class="planner-layout" id="jewelryForm" enctype="multipart/form-data">
+  <div class="panel form-panel">
+    <label>Budget (₹)<input name="budget" id="budget" type="number" min="1" step="100" required></label>
+    <div class="two-col">
+      <label>Occasion<input name="occasion" id="occasion" placeholder="Wedding, birthday..." required></label>
+      <label>Style<select name="style" id="style"><option>Elegant</option><option>Minimal</option><option>Traditional</option><option>Contemporary</option><option>Statement</option></select></label>
+    </div>
+    <div class="two-col">
+      <label>Metal<select name="metal" id="metal"><option>Any</option><option>Gold</option><option>Silver</option><option>Rose Gold</option><option>Artificial</option></select></label>
+      <label>Outfit color<input name="outfit_color" id="outfit_color" placeholder="Optional"></label>
+    </div>
+    <label>Notes<textarea name="notes" id="notes" rows="3" placeholder="Neckline, preferred size, matching requirements..."></textarea></label>
+    <label>Outfit image (optional)<input name="outfit_image" id="outfit_image" type="file" accept="image/jpeg,image/png,image/webp"></label>
+    <div id="imagePreview"></div>
+    <button class="btn primary full" type="submit">Generate Jewelry Recommendations</button>
+    <div id="jewelryMessage" class="message"></div>
+  </div>
+  <aside class="panel tips-panel">
+    <h3>Image privacy</h3>
+    <p>The image is sent to the backend only for the current recommendation request. The application stores planner input/result history, not the raw uploaded image.</p>
+  </aside>
+</form>
+<section id="results" class="results hidden"></section>
+{% endblock %}
+{% block scripts %}
+<script>
+requireAuth();
+document.getElementById("outfit_image").addEventListener("change", e => {
+  const file = e.target.files[0];
+  const preview = document.getElementById("imagePreview");
+  if (!file) { preview.innerHTML = ""; return; }
+  if (file.size > 5 * 1024 * 1024) { preview.textContent = "Image must be 5 MB or smaller."; e.target.value = ""; return; }
+  preview.innerHTML = `<img class="preview" src="${URL.createObjectURL(file)}" alt="Outfit preview">`;
+});
+
+document.getElementById("jewelryForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const msg = document.getElementById("jewelryMessage");
+  msg.textContent = "Analyzing...";
+  try {
+    const formData = new FormData(e.target);
+    const data = await api("/api/generate-jewelry", {
+      method: "POST", auth: true, body: formData
+    });
+    renderRecommendation(data, "results");
+    msg.textContent = data.ai_enabled ? "Generated with Gemini AI." : "Generated with fallback mode.";
+  } catch (err) { msg.textContent = err.message; }
+});
+</script>
+{% endblock %}

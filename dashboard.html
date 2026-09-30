@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — PocketSmart AI{% endblock %}
+{% block content %}
+<section class="page-head">
+  <span class="eyebrow">YOUR DASHBOARD</span>
+  <h1 id="welcome">Your smart planning space</h1>
+  <p class="muted">Choose a planner and turn a budget into an actionable plan.</p>
+</section>
+
+<div class="dashboard-grid">
+  <a class="feature-card" href="/home-planner"><div class="icon">⌂</div><h3>Home Interior</h3><p>Furniture, lighting and decor.</p><span>Open →</span></a>
+  <a class="feature-card" href="/party-planner"><div class="icon">✦</div><h3>Party</h3><p>Food, venue and entertainment.</p><span>Open →</span></a>
+  <a class="feature-card" href="/jewelry-planner"><div class="icon">◇</div><h3>Jewelry</h3><p>Occasion and outfit matching.</p><span>Open →</span></a>
+</div>
+
+<section class="panel">
+  <div class="section-head small"><span class="eyebrow">ACCOUNT</span><h2>Recent activity</h2></div>
+  <div id="dashboardStats" class="stats"></div>
+</section>
+{% endblock %}
+{% block scripts %}
+<script>
+(async () => {
+  requireAuth();
+  try {
+    const data = await api("/session-data", {auth: true});
+    document.getElementById("welcome").textContent = `Welcome, ${data.full_name}`;
+    document.getElementById("dashboardStats").innerHTML =
+      `<div class="stat"><b>${data.recommendation_count}</b><span>saved plans</span></div>
+       <div class="stat"><b>${escapeHtml(data.email)}</b><span>account</span></div>`;
+  } catch (_) {}
+})();
+</script>
+{% endblock %}

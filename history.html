@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}History — PocketSmart AI{% endblock %}
+{% block content %}
+<section class="page-head">
+  <span class="eyebrow">SAVED PLANS</span>
+  <h1>Recommendation History</h1>
+  <p class="muted">Review your previous AI planning requests.</p>
+</section>
+<div id="historyList" class="history-list"></div>
+{% endblock %}
+{% block scripts %}
+<script>
+(async () => {
+  requireAuth();
+  const box = document.getElementById("historyList");
+  try {
+    const rows = await api("/api/history", {auth: true});
+    if (!rows.length) {
+      box.innerHTML = `<div class="empty panel">No plans yet. Create your first plan.</div>`;
+      return;
+    }
+    box.innerHTML = rows.map(r => `
+      <button class="history-item" onclick="openHistory(${r.id})">
+        <span class="history-icon">${r.planner_type === "home" ? "⌂" : r.planner_type === "party" ? "✦" : "◇"}</span>
+        <span><b>${escapeHtml(r.planner_type)} planner</b><small>${new Date(r.created_at).toLocaleString()}</small></span>
+        <span>View →</span>
+      </button>`).join("");
+  } catch (err) { box.innerHTML = `<div class="message">${escapeHtml(err.message)}</div>`; }
+})();
+async function openHistory(id) {
+  try {
+    const data = await api(`/api/recommendations-details/${id}`, {auth: true});
+    localStorage.setItem("lastRecommendation", JSON.stringify(data.result));
+    location.href = `/dashboard#recommendation-${id}`;
+  } catch (err) { alert(err.message); }
+}
+</script>
+{% endblock %}

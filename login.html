@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Login — PocketSmart AI{% endblock %}
+{% block content %}
+<section class="auth-wrap">
+  <form class="panel auth-card" id="loginForm">
+    <span class="eyebrow">WELCOME BACK</span>
+    <h1>Login</h1>
+    <p class="muted">Access your saved plans and recommendation history.</p>
+    <label>Email<input type="email" id="email" required autocomplete="email"></label>
+    <label>Password<input type="password" id="password" required minlength="8" autocomplete="current-password"></label>
+    <button class="btn primary full" type="submit">Login</button>
+    <div id="formMessage" class="message"></div>
+    <p class="center">New here? <a href="/register">Create an account</a></p>
+  </form>
+</section>
+{% endblock %}
+{% block scripts %}
+<script>
+document.getElementById("loginForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const msg = document.getElementById("formMessage");
+  msg.textContent = "Signing in...";
+  try {
+    const data = await api("/login", {
+      method: "POST",
+      body: JSON.stringify({
+        email: document.getElementById("email").value,
+        password: document.getElementById("password").value
+      })
+    });
+    saveToken(data.access_token);
+    location.href = "/dashboard";
+  } catch (err) { msg.textContent = err.message; }
+});
+</script>
+{% endblock %}

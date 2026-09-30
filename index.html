@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}PocketSmart AI — Smart Budget Planner{% endblock %}
+{% block content %}
+<section class="hero">
+  <div class="hero-copy">
+    <span class="eyebrow">GENAI BUDGET ASSISTANT</span>
+    <h1>Plan smarter.<br><span>Spend with confidence.</span></h1>
+    <p>Build practical plans for home interiors, parties and jewelry using your budget, preferences and optional outfit image.</p>
+    <div class="actions">
+      <a class="btn primary" href="/register">Get Started</a>
+      <a class="btn secondary" href="/dashboard">Open Dashboard</a>
+    </div>
+  </div>
+  <div class="hero-card">
+    <div class="logo-orb">PS</div>
+    <h3>One budget. Many possibilities.</h3>
+    <p>Let AI structure your spending and turn your requirements into clear recommendations.</p>
+    <div class="mini-stat"><b>3</b><span>smart planners</span></div>
+    <div class="mini-stat"><b>1</b><span>personal budget</span></div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-head">
+    <span class="eyebrow">CHOOSE A PLANNER</span>
+    <h2>Designed around your real-life plans</h2>
+  </div>
+  <div class="feature-grid">
+    <a class="feature-card" href="/home-planner">
+      <div class="icon">⌂</div>
+      <h3>Home Interior</h3>
+      <p>Plan furniture, lighting, decor and storage while respecting your budget.</p>
+      <span>Start planning →</span>
+    </a>
+    <a class="feature-card" href="/party-planner">
+      <div class="icon">✦</div>
+      <h3>Party Planner</h3>
+      <p>Allocate money for food, venue, decoration and entertainment.</p>
+      <span>Start planning →</span>
+    </a>
+    <a class="feature-card" href="/jewelry-planner">
+      <div class="icon">◇</div>
+      <h3>Jewelry Planner</h3>
+      <p>Get occasion and style matched jewelry recommendations with an optional outfit image.</p>
+      <span>Start planning →</span>
+    </a>
+  </div>
+</section>
+{% endblock %}
